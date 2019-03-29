@@ -12,7 +12,11 @@ def get_serial_port():
         print("Trying to get windows port automatically...")
         #ports = ['COM%s' % (i + 1) for i in range(256)]
         ports = list(serial.tools.list_ports.comports())
-        return ports[0]
+        if ports.count() == 0:
+            print("No ports found")
+            return None
+        else:
+            return ports[0]
 
     elif sys.platform.startswith('linux') or sys.platform.startswith('cygwin'):
         # Linux platform get ports
@@ -22,6 +26,7 @@ def get_serial_port():
         if len(ser_devs) > 0:
             return '/dev/' + ser_devs[0]
         else:
+            print("No ports found")
             return None
 
     elif sys.platform.startswith('darwin'):
@@ -29,16 +34,19 @@ def get_serial_port():
         print("It's a mac!")
         print("Trying to get mac port automatically...")
         ports = list(serial.tools.list_ports.comports())
-        for p in ports:
-            print(p)
+        if ports.count() == 0:
+            print("No ports found")
+            return None
+        else:
+            for p in ports:
+                print(p)
 
-        arduinoPort = ports[0]
-        arduinoPortName = "/dev/" + arduinoPort.name
-        return arduinoPortName
+            arduinoPort = ports[0]
+            arduinoPortName = "/dev/" + arduinoPort.name
+            return arduinoPortName
 
     else:
         raise EnvironmentError('Error finding ports on your operating system')
-        return
 
 
 port = None
