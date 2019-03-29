@@ -23,6 +23,7 @@ def get_serial_port():
             return '/dev/' + ser_devs[0]
         else:
             return None
+
     elif sys.platform.startswith('darwin'):
         # Mac platform get ports
         print("It's a mac!")
@@ -34,6 +35,7 @@ def get_serial_port():
         arduinoPort = ports[0]
         arduinoPortName = "/dev/" + arduinoPort.name
         return arduinoPortName
+
     else:
         raise EnvironmentError('Error finding ports on your operating system')
         return
