@@ -54,9 +54,14 @@ while port == None:
     port = get_serial_port()
 
 ser = None
-while not ser:
-    ser = serial.Serial(port=port, baudrate=115200, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE,
-                         stopbits=serial.STOPBITS_ONE, timeout=1)
+while True:
+    try:
+        ser = serial.Serial(port=port, baudrate=115200, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE,
+                            stopbits=serial.STOPBITS_ONE, timeout=1)
+        if (ser):
+            break
+    except:
+        pass
 
 print("Serial connected!")
 #ser = serial.Serial(port, 115200)
