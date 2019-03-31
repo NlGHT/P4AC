@@ -70,6 +70,11 @@ while True:
 print("Serial connected!")
 #ser = serial.Serial(port, 115200)
 
+ser.close()
+ser.open()
+
+ser.flushInput()
+ser.flushOutput()
 
 while(1):
     serialLine = str(ser.readline())
