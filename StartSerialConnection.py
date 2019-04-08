@@ -79,11 +79,11 @@ while True:
 print("Serial connected!")
 #ser = serial.Serial(port, 115200)
 
-ser.close()
-ser.open()
+#ser.close()
+#ser.open()
 
-ser.flushInput()
-ser.flushOutput()
+#ser.flushInput()
+#ser.flushOutput()
 
 def load_graph(filename):
     """Unpersists graph from file as default graph."""
