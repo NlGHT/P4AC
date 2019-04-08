@@ -7,6 +7,9 @@ import serial.tools.list_ports
 import tensorflow as tf
 import argparse
 import sys
+import numpy as np
+import scipy.io.wavfile as scipywave
+from tensorflow.contrib.framework.python.ops import audio_ops as contrib_audio
 
 labels = "speech_commands_train/conv_labels.txt"
 graph = "speech_commands_train/my_frozen_graph.pb"
@@ -111,6 +114,15 @@ def run_graph(wav_data, labels):
         #   dimension represents the input image count, and the other has
         #   predictions per class
         softmax_tensor = sess.graph.get_tensor_by_name(output_layer_name)
+        wav_data = np.array(wav_data[1],dtype=np.int16)
+        print(wav_data[100])
+        tempWavPath = "samples/waveTest"
+        scipywave.write(tempWavPath, 44100, wav_data)
+        with open(tempWavPath, 'rb') as wav_file:
+            wav_data = wav_file.read()
+
+
+        #wav_data = tf.convert_to_tensor(wav_data, np.float16)
         predictions, = sess.run(softmax_tensor, {input_layer_name: wav_data})
 
         # Sort to show labels in order of confidence
@@ -129,9 +141,12 @@ def main(_):
         # load graph, which is stored in the default session
         load_graph(graph)
 
-        with open(wav, 'rb') as wav_file:
-            wav_data = wav_file.read()
-            print(len(wav_data))
+        #with open(wav, 'rb') as wav_file:
+        #    wav_data = wav_file.read()
+        #
+        #    print(len(wav_data))
+
+        wav_data = scipywave.read("samples/leftTest.wav")
 
         run_graph(wav_data, labels_list)
 
