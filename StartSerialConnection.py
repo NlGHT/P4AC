@@ -1,4 +1,4 @@
-import torch
+#import torch
 from time import sleep
 import serial
 import sys
@@ -19,12 +19,16 @@ def get_serial_port():
         print("It's a windows!")
         print("Trying to get windows port automatically...")
         #ports = ['COM%s' % (i + 1) for i in range(256)]
-        ports = list(serial.tools.list_ports.comports())
-        if ports.count() == 0:
-            print("No ports found")
-            return None
-        else:
-            return ports[0]
+        arduino_ports = [
+            p.device
+            for p in serial.tools.list_ports.comports()
+            if 'Arduino' in p.description
+        ]
+        if not arduino_ports:
+            raise IOError("No Arduino found")
+        if len(arduino_ports) > 1:
+            print('Multiple Arduinos found - using the first')
+        return arduino_ports[0]
 
     elif sys.platform.startswith('linux') or sys.platform.startswith('cygwin'):
         # Linux platform get ports
@@ -42,7 +46,7 @@ def get_serial_port():
         print("It's a mac!")
         print("Trying to get mac port automatically...")
         ports = list(serial.tools.list_ports.comports())
-        if ports.count() == 0:
+        if len(ports) == 0:
             print("No ports found")
             return None
         else:
@@ -58,7 +62,7 @@ def get_serial_port():
 
 """
 port = None
-while port == None:
+while port is None:
     port = get_serial_port()
 
 ser = None
@@ -75,6 +79,11 @@ while True:
 print("Serial connected!")
 #ser = serial.Serial(port, 115200)
 
+ser.close()
+ser.open()
+
+ser.flushInput()
+ser.flushOutput()
 
 def load_graph(filename):
     """Unpersists graph from file as default graph."""
