@@ -10,6 +10,9 @@ import sys
 import numpy as np
 import scipy.io.wavfile as scipywave
 from tensorflow.contrib.framework.python.ops import audio_ops as contrib_audio
+from pathlib import Path
+
+testingWithArduino = False
 
 labels = "speech_commands_train/conv_labels.txt"
 graph = "speech_commands_train/my_frozen_graph.pb"
@@ -63,30 +66,34 @@ def get_serial_port():
     else:
         raise EnvironmentError('Error finding ports on your operating system')
 
-"""
-port = None
-while port is None:
-    port = get_serial_port()
 
-ser = None
-while True:
-    try:
-        ser = serial.Serial(port=port, baudrate=115200, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE,
-                            stopbits=serial.STOPBITS_ONE, timeout=1)
-        if (ser):
-            break
-    except:
-        pass
-"""
 
-print("Serial connected!")
-#ser = serial.Serial(port, 115200)
+if testingWithArduino:
+    port = None
+    while port is None:
+        port = get_serial_port()
 
-#ser.close()
-#ser.open()
+    ser = None
+    while True:
+        try:
+            ser = serial.Serial(port=port, baudrate=115200, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE,
+                                stopbits=serial.STOPBITS_ONE, timeout=1)
+            if (ser):
+                break
+        except:
+            pass
 
-#ser.flushInput()
-#ser.flushOutput()
+
+    print("Serial connected!")
+    ser = serial.Serial(port, 115200)
+
+    ser.close()
+    ser.open()
+
+    ser.flushInput()
+    ser.flushOutput()
+
+
 
 def load_graph(filename):
     """Unpersists graph from file as default graph."""
@@ -101,11 +108,10 @@ def load_labels(filename):
     return [line.rstrip() for line in tf.gfile.GFile(filename)]
 
 
-def run_graph(wav_data, labels):
+def run_graph(wav_data, labels, threadNumber):
     input_layer_name = "wav_data:0"
     output_layer_name = "labels_softmax:0"
     num_top_predictions = 3
-
 
     """Runs the audio data through the graph and prints predictions."""
     with tf.Session() as sess:
@@ -116,10 +122,12 @@ def run_graph(wav_data, labels):
         softmax_tensor = sess.graph.get_tensor_by_name(output_layer_name)
         wav_data = np.array(wav_data[1],dtype=np.int16)
         print(wav_data[100])
-        tempWavPath = "samples/waveTest"
+        tempWavPath = "samples/TemporaryWavSamplesSaved/waveTest" + str(threadNumber)
+
         scipywave.write(tempWavPath, 44100, wav_data)
         with open(tempWavPath, 'rb') as wav_file:
             wav_data = wav_file.read()
+        os.remove(tempWavPath)
 
 
         #wav_data = tf.convert_to_tensor(wav_data, np.float16)
@@ -133,34 +141,27 @@ def run_graph(wav_data, labels):
             print('%s (score = %.5f)' % (human_string, score))
 
 
-def main(_):
-
+def main(threadNumber):
     with tf.Session() as session:
         labels_list = load_labels(labels)
 
         # load graph, which is stored in the default session
         load_graph(graph)
 
-        #with open(wav, 'rb') as wav_file:
-        #    wav_data = wav_file.read()
-        #
-        #    print(len(wav_data))
-
         wav_data = scipywave.read("samples/leftTest.wav")
 
-        run_graph(wav_data, labels_list)
+        run_graph(wav_data, labels_list, threadNumber[0])
 
 
+threadNumber = 0
 
-tf.app.run(main=main, argv=None)
-
-    #saver = tf.train.Saver()
-    #saver.restore(session, "speech_commands_train/conv.ckpt-18000")
-
+if not testingWithArduino:
+    tf.app.run(main=main, argv=[threadNumber])
 
 
-#while(1):
-    #serialLine = str(ser.readline())
-    #serialNumber = serialLine.split("'")[1].split("\\")[0]
+if testingWithArduino:
+    while(1):
+        serialLine = str(ser.readline())
+        serialNumber = serialLine.split("'")[1].split("\\")[0]
 
-    #print(serialNumber)
+        print(serialNumber)
