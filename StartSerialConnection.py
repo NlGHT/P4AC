@@ -12,7 +12,7 @@ import scipy.io.wavfile as scipywave
 from tensorflow.contrib.framework.python.ops import audio_ops as contrib_audio
 from pathlib import Path
 
-testingWithArduino = False
+testingWithArduino = True
 
 labels = "speech_commands_train/conv_labels.txt"
 graph = "speech_commands_train/my_frozen_graph.pb"
@@ -52,16 +52,22 @@ def get_serial_port():
         print("It's a mac!")
         print("Trying to get mac port automatically...")
         ports = list(serial.tools.list_ports.comports())
+
+
         if len(ports) == 0:
             print("No ports found")
             return None
         else:
-            for p in ports:
-                print(p)
+            arduinoPort = None
+            for port in ports:
+                print(str(port)[-6:])
+                if (str(port)[-6:]=="serial"):
+                    arduinoPort = str(port).split(" ")[0]
+                    print(arduinoPort)
 
-            arduinoPort = ports[0]
-            arduinoPortName = "/dev/" + arduinoPort.name
-            return arduinoPortName
+            arduinoPort = ports[1]
+            arduinoPort = str(port).split(" ")[0]
+            return arduinoPort
 
     else:
         raise EnvironmentError('Error finding ports on your operating system')
