@@ -55,6 +55,8 @@ def get_serial_port():
         print("It's a mac!")
         print("Trying to get mac port automatically...")
         ports = list(serial.tools.list_ports.comports())
+
+
         if len(ports) == 0:
             print("No ports found")
             return None
