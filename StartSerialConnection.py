@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import time
 
 testingWithArduino = True
-sampleRate = 2000000
+baudRate = 2000000
 
 labels = "speech_commands_train/conv_labels.txt"
 graph = "speech_commands_train/my_frozen_graph.pb"
@@ -83,7 +83,7 @@ if testingWithArduino:
         try:
             #ser = serial.Serial(port=port, baudrate=sampleRate, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE,
             #                    stopbits=serial.STOPBITS_ONE, timeout=1)
-            ser = serial.Serial(port, sampleRate)
+            ser = serial.Serial(port, baudRate)
             if (ser):
                 break
         except:
@@ -126,12 +126,12 @@ def run_graph(wav_data, labels, threadNumber):
         #   predictions per class
         softmax_tensor = sess.graph.get_tensor_by_name(output_layer_name)
         wav_data = np.array(wav_data[1],dtype=np.int16)
-        print(wav_data[sampleRate])
+        print(wav_data[baudRate])
         plt.plot(wav_data)
         plt.show()
         tempWavPath = "samples/TemporaryWavSamplesSaved/waveTest" + str(threadNumber)
 
-        scipywave.write(tempWavPath, sampleRate, wav_data)
+        scipywave.write(tempWavPath, baudRate, wav_data)
         with open(tempWavPath, 'rb') as wav_file:
             wav_data = wav_file.read()
         os.remove(tempWavPath)
@@ -178,7 +178,7 @@ if testingWithArduino:
         serialLine = str(ser.readline())
         serialNumber = serialLine.split("'")[1].split("\\")[0]
 
-        if (len(arrayStartBuffer) < sampleRate and startedActuallyRecording == False):
+        if (len(arrayStartBuffer) < baudRate and startedActuallyRecording == False):
             arrayStartBuffer.append(serialNumber)
             realTime = time.perf_counter()
             if (realTime-startTime > 1):
