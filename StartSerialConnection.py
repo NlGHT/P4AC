@@ -11,8 +11,11 @@ import numpy as np
 import scipy.io.wavfile as scipywave
 from tensorflow.contrib.framework.python.ops import audio_ops as contrib_audio
 from pathlib import Path
+import matplotlib.pyplot as plt
+import time
 
-testingWithArduino = False
+testingWithArduino = True
+sampleRate = 2000000
 
 labels = "speech_commands_train/conv_labels.txt"
 graph = "speech_commands_train/my_frozen_graph.pb"
@@ -76,8 +79,9 @@ if testingWithArduino:
     ser = None
     while True:
         try:
-            ser = serial.Serial(port=port, baudrate=115200, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE,
-                                stopbits=serial.STOPBITS_ONE, timeout=1)
+            #ser = serial.Serial(port=port, baudrate=sampleRate, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE,
+            #                    stopbits=serial.STOPBITS_ONE, timeout=1)
+            ser = serial.Serial(port, sampleRate)
             if (ser):
                 break
         except:
@@ -85,7 +89,6 @@ if testingWithArduino:
 
 
     print("Serial connected!")
-    ser = serial.Serial(port, 115200)
 
     ser.close()
     ser.open()
@@ -121,10 +124,12 @@ def run_graph(wav_data, labels, threadNumber):
         #   predictions per class
         softmax_tensor = sess.graph.get_tensor_by_name(output_layer_name)
         wav_data = np.array(wav_data[1],dtype=np.int16)
-        print(wav_data[100])
+        print(wav_data[sampleRate])
+        plt.plot(wav_data)
+        plt.show()
         tempWavPath = "samples/TemporaryWavSamplesSaved/waveTest" + str(threadNumber)
 
-        scipywave.write(tempWavPath, 44100, wav_data)
+        scipywave.write(tempWavPath, sampleRate, wav_data)
         with open(tempWavPath, 'rb') as wav_file:
             wav_data = wav_file.read()
         os.remove(tempWavPath)
@@ -159,9 +164,31 @@ if not testingWithArduino:
     tf.app.run(main=main, argv=[threadNumber])
 
 
+startedActuallyRecording = False
+arrayStartBuffer = []
+meanPoint = 450
+
+startTime = time.perf_counter()
+bufferLength = 0
+
 if testingWithArduino:
     while(1):
         serialLine = str(ser.readline())
         serialNumber = serialLine.split("'")[1].split("\\")[0]
 
-        print(serialNumber)
+        if (len(arrayStartBuffer) < sampleRate and startedActuallyRecording == False):
+            arrayStartBuffer.append(serialNumber)
+            realTime = time.perf_counter()
+            if (realTime-startTime > 1):
+                print(len(arrayStartBuffer)-bufferLength)
+                bufferLength = len(arrayStartBuffer)
+                startTime=realTime
+        elif (startedActuallyRecording == False):
+            meanPoint = int(np.mean(arrayStartBuffer))
+            startedActuallyRecording = True
+        else:
+            displacement = serialNumber - meanPoint
+            print(displacement)
+
+
+        #print(serialNumber)
