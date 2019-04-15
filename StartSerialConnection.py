@@ -11,7 +11,7 @@ import numpy as np
 import scipy.io.wavfile as scipywave
 from tensorflow.contrib.framework.python.ops import audio_ops as contrib_audio
 from pathlib import Path
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import time
 
 testingWithArduino = False

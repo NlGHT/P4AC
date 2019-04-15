@@ -1,7 +1,7 @@
 import numpy
 import scipy.io.wavfile
 import matplotlib.pyplot as plt
-from scipy.fftpack import dct
+#from scipy.fftpack import dct
 from mfcc_bro import do_mfcc
 
 def gimmeDaSPECtogram(input, window_size_ms=30.0, stride_ms=10.0, pre_emphasis=0.97, NFFT=512, triangular_filters=40, magnitude_squared=False, name=None):
@@ -19,7 +19,8 @@ def gimmeDaSPECtogram(input, window_size_ms=30.0, stride_ms=10.0, pre_emphasis=0
     num_frames = int(numpy.ceil(
         float(numpy.abs(signal_length - frame_length)) / frame_step))  # Make sure that we have at least 1 frame
 
-    """
+    print(sample_rate)
+    """ FIXED
     print(len(signal)) #16k ofc
     print(sample_rate) #16k ofc
     print(len(emphasized_signal)) #16k ofc
@@ -48,7 +49,7 @@ def gimmeDaSPECtogram(input, window_size_ms=30.0, stride_ms=10.0, pre_emphasis=0
     #plt.plot(pow_frames)
 
     low_freq_mel = 0
-    high_freq_mel = (2595 * numpy.log10(1 + (sample_rate / 2) / 700))  # Convert Hz to Mel
+    high_freq_mel = (2595 * numpy.log10(1 + (sample_rate / 2) / 700))  #Why is this shit divided by 2? huh? # Convert Hz to Mel
     mel_points = numpy.linspace(low_freq_mel, high_freq_mel, triangular_filters + 2)  # Equally spaced in Mel scale
     hz_points = (700 * (10 ** (mel_points / 2595) - 1))  # Convert Mel to Hz
     bin = numpy.floor((NFFT + 1) * hz_points / sample_rate)
@@ -68,11 +69,43 @@ def gimmeDaSPECtogram(input, window_size_ms=30.0, stride_ms=10.0, pre_emphasis=0
 
     filter_banks = 20 * numpy.log10(filter_banks)  # dB
 
-    do_mfcc(filter_banks, upper_frequency_limit=4000, lower_frequency_limit=20, dct_coefficient_count=12)
+    #do_mfcc(filter_banks, upper_frequency_limit=4000, lower_frequency_limit=0, dct_coefficient_count=12)
 
     #plt.imshow(filter_banks)
 
-    plt.imshow(do_mfcc(filter_banks, upper_frequency_limit=4000, lower_frequency_limit=20, dct_coefficient_count=12))
+    #plt.imshow(do_mfcc(filter_banks, upper_frequency_limit=4000, lower_frequency_limit=0, dct_coefficient_count=12))
+
+    #plt.show()
+
+    #mfcc plot
+
+    plt.subplot(312)
+    filter_banks = do_mfcc(do_mfcc(filter_banks, upper_frequency_limit=4000, lower_frequency_limit=0, dct_coefficient_count=12))
+    #filter_banks -= (numpy.mean(filter_banks, axis=0) + 1e-8)
+    plt.imshow(filter_banks.T, cmap=plt.cm.jet, aspect='auto')
+    plt.xticks(numpy.arange(0, (filter_banks.T).shape[1],
+                         int((filter_banks.T).shape[1] / 4)),
+               ['0s', '0.25s', '0.5s', '0.75s', '1s'])
+    plt.yticks(numpy.arange(1, (filter_banks.T).shape[0],
+                         int((filter_banks.T).shape[0]/4)),
+               ['0', '3', '6', '9', '12'])
+    ax = plt.gca()
+    ax.invert_yaxis()
+    plt.title('the mfcc image')
+
+    #Spectrum
+    """
+
+    filter_banks -= (numpy.mean(filter_banks, axis=0) + 1e-8)
+    plt.imshow(filter_banks.T, cmap=plt.cm.jet, aspect='auto')
+    plt.xticks(numpy.arange(0, (filter_banks.T).shape[1],
+                            int((filter_banks.T).shape[1] / 4)),
+               ['0s', '0.25s', '0.5s', '0.75s', '1s'])
+    ax = plt.gca()
+    ax.invert_yaxis()
+    plt.title('the spectrum image')
+    
+    """
 
     plt.show()
 
