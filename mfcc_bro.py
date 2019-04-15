@@ -7,9 +7,10 @@ def do_mfcc(spectrogram, upper_frequency_limit=4000, lower_frequency_limit=0, dc
 
     mfcc -= (numpy.mean(mfcc, axis=0) + 1e-8)  # Mean normalization of mfcc
 
-    return mfcc
 
-    #(nframes, ncoeff) = mfcc.shape
-    #n = numpy.arange(ncoeff)
-    #lift = 1 + (cep_lifter / 2) * numpy.sin(numpy.pi * n / cep_lifter)
-    #mfcc *= lift
+    (nframes, ncoeff) = mfcc.shape
+    n = numpy.arange(ncoeff)
+    lift = 1 + (22 / 2) * numpy.sin(numpy.pi * n / 22) #ceplifter – apply a lifter to final cepstral coefficients. 0 is no lifter. Default is 22.
+    mfcc *= lift
+
+    return mfcc
