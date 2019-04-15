@@ -127,8 +127,8 @@ def run_graph(wav_data, labels, threadNumber):
         softmax_tensor = sess.graph.get_tensor_by_name(output_layer_name)
         wav_data = np.array(wav_data[1],dtype=np.int16)
         print(wav_data[2000])
-        plt.plot(wav_data)
-        plt.show()
+        #plt.plot(wav_data)
+        #plt.show()
         tempWavPath = "samples/TemporaryWavSamplesSaved/waveTest" + str(threadNumber)
 
         scipywave.write(tempWavPath, 44100, wav_data)
