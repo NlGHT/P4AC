@@ -11,10 +11,10 @@ import numpy as np
 import scipy.io.wavfile as scipywave
 from tensorflow.contrib.framework.python.ops import audio_ops as contrib_audio
 from pathlib import Path
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import time
 
-testingWithArduino = True
+testingWithArduino = False
 baudRate = 2000000
 
 labels = "speech_commands_train/conv_labels.txt"
@@ -126,12 +126,12 @@ def run_graph(wav_data, labels, threadNumber):
         #   predictions per class
         softmax_tensor = sess.graph.get_tensor_by_name(output_layer_name)
         wav_data = np.array(wav_data[1],dtype=np.int16)
-        print(wav_data[baudRate])
-        plt.plot(wav_data)
-        plt.show()
+        print(wav_data[2000])
+        #plt.plot(wav_data)
+        #plt.show()
         tempWavPath = "samples/TemporaryWavSamplesSaved/waveTest" + str(threadNumber)
 
-        scipywave.write(tempWavPath, baudRate, wav_data)
+        scipywave.write(tempWavPath, 44100, wav_data)
         with open(tempWavPath, 'rb') as wav_file:
             wav_data = wav_file.read()
         os.remove(tempWavPath)
