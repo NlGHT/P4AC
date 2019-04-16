@@ -80,7 +80,7 @@ def gimmeDaSPECtogram(input, window_size_ms=30.0, stride_ms=10.0, pre_emphasis=0
     #mfcc plot
 
     plt.subplot(312)
-    filter_banks = do_mfcc(do_mfcc(filter_banks, upper_frequency_limit=4000, lower_frequency_limit=0, dct_coefficient_count=12))
+    filter_banks = do_mfcc(filter_banks, upper_frequency_limit=4000, lower_frequency_limit=0, dct_coefficient_count=12)
     #filter_banks -= (numpy.mean(filter_banks, axis=0) + 1e-8)
     plt.imshow(filter_banks.T, cmap=plt.cm.jet, aspect='auto')
     plt.xticks(numpy.arange(0, (filter_banks.T).shape[1],
@@ -112,4 +112,4 @@ def gimmeDaSPECtogram(input, window_size_ms=30.0, stride_ms=10.0, pre_emphasis=0
 
 
 
-gimmeDaSPECtogram("samples/left.wav", window_size_ms=30.0, stride_ms=10.0, pre_emphasis=0.97)
+gimmeDaSPECtogram("samples/leftTest.wav", window_size_ms=30.0, stride_ms=10.0, pre_emphasis=0.97)
