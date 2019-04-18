@@ -1,4 +1,5 @@
 #import torch
+import wave
 from time import sleep
 import serial
 import sys
@@ -8,12 +9,9 @@ import tensorflow as tf
 import argparse
 import sys
 import numpy as np
-import scipy.io.wavfile as scipywave
-from tensorflow.contrib.framework.python.ops import audio_ops as contrib_audio
-from pathlib import Path
-import matplotlib.pyplot as plt
-import time
-import commandToArduino
+import pyaudio
+import threading
+import collections
 
 testingWithArduino = False
 baudRate = 2000000
@@ -21,6 +19,112 @@ baudRate = 2000000
 labels = "speech_commands_train/conv_labels.txt"
 graph = "speech_commands_train/my_frozen_graph.pb"
 wav = "samples/leftTest.wav"
+
+
+
+
+#####################################################
+####### Audio input variables
+#####################################################
+
+CHUNK = 1024
+FORMAT = pyaudio.paInt16
+CHANNELS = 2
+RATE = 16000
+RECORD_SECONDS = 5
+WAVE_OUTPUT_FILENAME = "output.wav"
+
+p = pyaudio.PyAudio()
+
+# You can specify which microphone input device you want to use
+micDeviceIndex = -1
+RMSthreshold = 2000
+voiceExtractTimeSeconds = 1
+lookBackBufferLength = 10 #43 is a second of length
+
+info = p.get_host_api_info_by_index(0)
+numdevices = info.get('deviceCount')
+for i in range(0, numdevices):
+        if (p.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')) > 0:
+            print("Input Device id ", i, " - ", p.get_device_info_by_host_api_device_index(0, i).get('name'))
+            if micDeviceIndex == -1:
+                if p.get_device_info_by_host_api_device_index(0, i).get('name') == "default":
+                    micDeviceIndex = i
+
+
+
+stream = p.open(format=FORMAT,
+                channels=CHANNELS,
+                rate=RATE,
+                input=True,
+                frames_per_buffer=CHUNK,
+                input_device_index=micDeviceIndex)
+
+if stream.is_active():
+    print("* recording")
+else:
+    print("* microphone serial connection not started")
+
+
+def threadFunction(bufferInclude):
+
+    print(bufferInclude)
+    listOfWavData = []
+    for thing in bufferInclude:
+        listOfWavData.append(thing)
+
+    streamLocal = p.open(format=FORMAT,
+                    channels=CHANNELS,
+                    rate=RATE,
+                    input=True,
+                    frames_per_buffer=CHUNK,
+                    input_device_index=micDeviceIndex)
+
+    for i in range(0, int(RATE / CHUNK * voiceExtractTimeSeconds)):
+        data = streamLocal.read(CHUNK)
+        listOfWavData.append(data)
+        if np_audioop_rms(data, CHUNK) < RMSthreshold:
+            break
+
+    print("Made it past recording")
+
+    WAVE_OUTPUT_FILENAME = "samples/TemporaryWavSamplesSaved/tempWav" + str(threading.current_thread().ident) + ".wav"
+
+    wf = wave.open(WAVE_OUTPUT_FILENAME, 'wb')
+    wf.setnchannels(CHANNELS)
+    wf.setsampwidth(p.get_sample_size(FORMAT))
+    wf.setframerate(RATE)
+    wf.writeframes(b''.join(listOfWavData))
+    wf.close()
+
+    with open(WAVE_OUTPUT_FILENAME, 'rb') as wav_file:
+        wav_data = wav_file.read()
+    os.remove(WAVE_OUTPUT_FILENAME)
+
+    with tf.Session() as session:
+        labels_list = load_labels(labels)
+
+        # load graph, which is stored in the default session
+        load_graph(graph)
+
+        run_graph(wav_data, labels_list)
+
+
+def np_audioop_rms(data, width):
+
+    #_checkParameters(data, width)
+    if len(data) == 0: return None
+    d = np.frombuffer(data, np.int16).astype(np.float)
+    #print(d)
+    rms = np.sqrt((d*d).sum()/len(d))
+    return int(rms)
+
+
+
+
+
+#################################################
+
 
 
 def get_serial_port():
@@ -114,7 +218,7 @@ def load_labels(filename):
     return [line.rstrip() for line in tf.gfile.GFile(filename)]
 
 
-def run_graph(wav_data, labels, threadNumber):
+def run_graph(wav_data, labels):
     input_layer_name = "wav_data:0"
     output_layer_name = "labels_softmax:0"
     num_top_predictions = 3
@@ -126,16 +230,6 @@ def run_graph(wav_data, labels, threadNumber):
         #   dimension represents the input image count, and the other has
         #   predictions per class
         softmax_tensor = sess.graph.get_tensor_by_name(output_layer_name)
-        wav_data = np.array(wav_data[1],dtype=np.int16)
-        print(wav_data[2000])
-        #plt.plot(wav_data)
-        #plt.show()
-        tempWavPath = "samples/TemporaryWavSamplesSaved/waveTest" + str(threadNumber)
-
-        scipywave.write(tempWavPath, 44100, wav_data)
-        with open(tempWavPath, 'rb') as wav_file:
-            wav_data = wav_file.read()
-        os.remove(tempWavPath)
 
 
         #wav_data = tf.convert_to_tensor(wav_data, np.float16)
@@ -147,28 +241,35 @@ def run_graph(wav_data, labels, threadNumber):
             human_string = labels[node_id]
             score = predictions[node_id]
             print('%s (score = %.5f)' % (human_string, score))
-            commandToArduino.sendCommand(human_string)
+            #commandToArduino.sendCommand(human_string)
             break
 
 
-def main(threadNumber):
-    with tf.Session() as session:
-        labels_list = load_labels(labels)
-
-        # load graph, which is stored in the default session
-        load_graph(graph)
-
-        wav_data = scipywave.read("samples/leftTest.wav")
-
-        run_graph(wav_data, labels_list, threadNumber[0])
-
-
-threadNumber = 0
-
-if not testingWithArduino:
-    tf.app.run(main=main, argv=[threadNumber])
+def main(args):
+    bufferInclude = collections.deque(maxlen=lookBackBufferLength)
+    takingData = False
+    while 1:
+        data = stream.read(CHUNK)
+        bufferInclude.append(data)
+        # print(data)
+        if np_audioop_rms(data, CHUNK) < RMSthreshold and takingData:
+            takingData = False
+        if np_audioop_rms(data, CHUNK) > RMSthreshold and not takingData:
+            takingData = True
+            thread = threading.Thread(target=threadFunction, args=([bufferInclude]))
+            thread.start()
 
 
+tf.app.run(main=main)
+
+
+
+
+
+
+
+
+"""
 startedActuallyRecording = False
 arrayStartBuffer = []
 meanPoint = 450
@@ -197,3 +298,5 @@ if testingWithArduino:
 
 
         #print(serialNumber)
+
+"""
