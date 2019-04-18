@@ -13,6 +13,7 @@ from tensorflow.contrib.framework.python.ops import audio_ops as contrib_audio
 from pathlib import Path
 import matplotlib.pyplot as plt
 import time
+import commandToArduino
 
 testingWithArduino = False
 baudRate = 2000000
@@ -146,6 +147,8 @@ def run_graph(wav_data, labels, threadNumber):
             human_string = labels[node_id]
             score = predictions[node_id]
             print('%s (score = %.5f)' % (human_string, score))
+            commandToArduino.sendCommand(human_string)
+            break
 
 
 def main(threadNumber):

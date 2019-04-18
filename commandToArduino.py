@@ -4,8 +4,7 @@ arduinoSerial = serial.Serial('COM3', 9600)
 
 print(arduinoSerial)
 
-def commandToArduino(tensor):
-    command = tensor
+def sendCommand(command):
     while 1:
         '''
         All Variables in this while loop should be changed to match Tensorflow
@@ -18,31 +17,31 @@ def commandToArduino(tensor):
         var = input()
         print("You entered ", var)
 
-        if(var == '1'): #if(human_string == "left")
+        if(command == "left"): #if(human_string == "left")
             arduinoSerial.write(b'1')
             print("Sent '1' to Arduino (left)")
-        elif(var == '2'): #if(human_string == "right")
+        elif(command == "right"): #if(human_string == "right")
             arduinoSerial.write(b'2')
             print("Sent '2' to Arduino (right)")
-        elif(var == '3'): #if(human_string == "up")
+        elif(command == "up"): #if(human_string == "up")
             arduinoSerial.write(b'3')
             print("Sent '3' to Arduino (up)")
-        elif(var == '4'): #if(human_string == "down")
+        elif(command == "down"): #if(human_string == "down")
             arduinoSerial.write(b'4')
             print("Sent '4' to Arduino (down)")
-        elif(var == '5'): #if(human_string == "square")
+        elif(command == "square"): #if(human_string == "square")
             arduinoSerial.write(b'5')
             print("Sent '5' to Arduino (square)")
-        elif (var == '6'): #if(human_string == "tri")
+        elif (command == "tri"): #if(human_string == "tri")
             arduinoSerial.write(b'6')
             print("Sent '6' to Arduino (tri)")
-        elif(var == '7'): #if(human_string == "round")
+        elif(command == "round"): #if(human_string == "round")
             arduinoSerial.write(b'7')
             print("Sent '7' to Arduino (round)")
-        elif(var == '8'): #if(human_string == "cross")
+        elif(command == "cross"): #if(human_string == "cross")
             arduinoSerial.write(b'8')
             print("Sent '8' to Arduino (cross)")
-        elif(var == '9'): #if(human_string == "stop")
+        elif(command == "stop"): #if(human_string == "stop")
             arduinoSerial.write(b'9')
             print("Sent '9' to Arduino (stop)")
         else:
