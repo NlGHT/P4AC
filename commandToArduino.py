@@ -1,50 +1,39 @@
-import serial
-
-arduinoSerial = serial.Serial('COM3', 9600)
-
-print(arduinoSerial)
-
-def sendCommand(command):
-    while 1:
+def sendCommand(command, serialPort):
         '''
-        All Variables in this while loop should be changed to match Tensorflow
-        such that var = input() is instead a check for what Tensorflow found
+        This function reads the output of the Tensorflow classification ( which is
+        a string called human_string) and uses it to send an integer command to
+        the Arduino.
         
-        Tensorflow returns 3 human_string strings and accuracies for them. We want
-        to write it such that the top accuracy string is chosen as a check variable for ifs
+        It takes two inputs, the string and a serial port to write to.
         '''
 
-        var = input()
-        print("You entered ", var)
-
-        if(command == "left"): #if(human_string == "left")
-            arduinoSerial.write(b'1')
+        if(command == "left"):
+            serialPort.write(b'1')
             print("Sent '1' to Arduino (left)")
-        elif(command == "right"): #if(human_string == "right")
-            arduinoSerial.write(b'2')
+        elif(command == "right"):
+            serialPort.write(b'2')
             print("Sent '2' to Arduino (right)")
-        elif(command == "up"): #if(human_string == "up")
-            arduinoSerial.write(b'3')
+        elif(command == "up"):
+            serialPort.write(b'3')
             print("Sent '3' to Arduino (up)")
-        elif(command == "down"): #if(human_string == "down")
-            arduinoSerial.write(b'4')
+        elif(command == "down"):
+            serialPort.write(b'4')
             print("Sent '4' to Arduino (down)")
-        elif(command == "square"): #if(human_string == "square")
-            arduinoSerial.write(b'5')
+        elif(command == "square"):
+            serialPort.write(b'5')
             print("Sent '5' to Arduino (square)")
-        elif (command == "tri"): #if(human_string == "tri")
-            arduinoSerial.write(b'6')
+        elif (command == "tri"):
+            serialPort.write(b'6')
             print("Sent '6' to Arduino (tri)")
-        elif(command == "round"): #if(human_string == "round")
-            arduinoSerial.write(b'7')
+        elif(command == "round"):
+            serialPort.write(b'7')
             print("Sent '7' to Arduino (round)")
-        elif(command == "cross"): #if(human_string == "cross")
-            arduinoSerial.write(b'8')
+        elif(command == "cross"):
+            serialPort.write(b'8')
             print("Sent '8' to Arduino (cross)")
-        elif(command == "stop"): #if(human_string == "stop")
-            arduinoSerial.write(b'9')
+        elif(command == "stop"):
+            serialPort.write(b'9')
             print("Sent '9' to Arduino (stop)")
         else:
-            # In all other cases than the mapped words
-            arduinoSerial.write(b'10')
+            serialPort.write(b'10')
             print("Command not recognized (_unknown_)")

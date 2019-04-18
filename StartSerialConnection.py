@@ -12,8 +12,8 @@ import numpy as np
 import pyaudio
 import threading
 import collections
+import commandToArduino
 
-testingWithArduino = False
 baudRate = 2000000
 
 labels = "speech_commands_train/conv_labels.txt"
@@ -177,34 +177,6 @@ def get_serial_port():
         raise EnvironmentError('Error finding ports on your operating system')
 
 
-
-if testingWithArduino:
-    port = None
-    while port is None:
-        port = get_serial_port()
-
-    ser = None
-    while True:
-        try:
-            #ser = serial.Serial(port=port, baudrate=sampleRate, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE,
-            #                    stopbits=serial.STOPBITS_ONE, timeout=1)
-            ser = serial.Serial(port, baudRate)
-            if (ser):
-                break
-        except:
-            pass
-
-
-    print("Serial connected!")
-
-    ser.close()
-    ser.open()
-
-    ser.flushInput()
-    ser.flushOutput()
-
-
-
 def load_graph(filename):
     """Unpersists graph from file as default graph."""
     with tf.gfile.GFile(filename, 'rb') as f:
@@ -241,7 +213,8 @@ def run_graph(wav_data, labels):
             human_string = labels[node_id]
             score = predictions[node_id]
             print('%s (score = %.5f)' % (human_string, score))
-            #commandToArduino.sendCommand(human_string)
+
+            commandToArduino.sendCommand(human_string, ser) # Send command read (human_string) to arduino
             break
 
 
@@ -260,6 +233,8 @@ def main(args):
             thread.start()
 
 
+port = get_serial_port()
+ser = serial.Serial(port, baudRate)
 tf.app.run(main=main)
 
 
