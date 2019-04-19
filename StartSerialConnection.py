@@ -27,22 +27,22 @@ testingWithArduino = True
 ####### Audio input variables
 #####################################################
 
-CHUNK = 1024
-FORMAT = pyaudio.paInt16
-CHANNELS = 2
-RATE = 16000
-RECORD_SECONDS = 5
-WAVE_OUTPUT_FILENAME = "output.wav"
+CHUNK: int = 1024
+FORMAT: int = pyaudio.paInt16
+CHANNELS: int = 2
+RATE: int = 16000
+RECORD_SECONDS: int = 5
+WAVE_OUTPUT_FILENAME: str = "output.wav"
 
 p = pyaudio.PyAudio()
 
 # You can specify which microphone input device you want to use
-micDeviceIndex = -1
-RMSthreshold = 2000
-voiceExtractTimeSeconds = 1
-lookBackBufferLength = 10 #43 is a second of length
-audioCutSplitChunks = 4
-scoreThreshold = 0.3
+micDeviceIndex: int = -1
+RMSthreshold: int = 2000
+voiceExtractTimeSeconds: int = 1
+lookBackBufferLength: int = 10 #43 is a second of length
+audioCutSplitChunks: int = 4
+scoreThreshold: float = 0.5
 
 info = p.get_host_api_info_by_index(0)
 numdevices = info.get('deviceCount')
@@ -85,7 +85,7 @@ def threadFunction(bufferInclude):
     for i in range(0, int(RATE / CHUNK * voiceExtractTimeSeconds)):
         data = streamLocal.read(CHUNK)
         listOfWavData.append(data)
-        if np_audioop_rms(data, CHUNK) < RMSthreshold:
+        if calculateRMS(data, CHUNK) < RMSthreshold:
             break
 
     print("Made it past recording")
@@ -112,7 +112,7 @@ def threadFunction(bufferInclude):
         run_graph(wav_data, labels_list)
 
 
-def np_audioop_rms(data, width):
+def calculateRMS(data, width):
 
     #_checkParameters(data, width)
     if len(data) == 0: return None
@@ -138,7 +138,7 @@ def get_serial_port():
         arduino_ports = [
             p.device
             for p in serial.tools.list_ports.comports()
-            if 'Arduino' in p.description
+            if 'Arduino' in p.description or 'Serial' in p.description
         ]
         if not arduino_ports:
             raise IOError("No Arduino found")
@@ -228,9 +228,9 @@ def main(args):
         data = stream.read(CHUNK)
         bufferInclude.append(data)
         # print(data)
-        if np_audioop_rms(data, CHUNK) < RMSthreshold and takingDataCountdown > 0:
+        if calculateRMS(data, CHUNK) < RMSthreshold and takingDataCountdown > 0:
             takingDataCountdown -= audioCutSplitChunks
-        if np_audioop_rms(data, CHUNK) > RMSthreshold and takingDataCountdown == 0:
+        if calculateRMS(data, CHUNK) > RMSthreshold and takingDataCountdown == 0:
             takingDataCountdown = audioCutSplitChunks
             thread = threading.Thread(target=threadFunction, args=([bufferInclude]))
             thread.start()
