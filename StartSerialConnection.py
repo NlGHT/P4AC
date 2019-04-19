@@ -20,7 +20,7 @@ labels = "speech_commands_train/conv_labels.txt"
 graph = "speech_commands_train/my_frozen_graph.pb"
 wav = "samples/leftTest.wav"
 
-
+testingWithArduino = False
 
 
 #####################################################
@@ -41,6 +41,7 @@ micDeviceIndex = -1
 RMSthreshold = 2000
 voiceExtractTimeSeconds = 1
 lookBackBufferLength = 10 #43 is a second of length
+audioCutSplitChunks = 4
 
 info = p.get_host_api_info_by_index(0)
 numdevices = info.get('deviceCount')
@@ -213,28 +214,29 @@ def run_graph(wav_data, labels):
             human_string = labels[node_id]
             score = predictions[node_id]
             print('%s (score = %.5f)' % (human_string, score))
-
-            commandToArduino.sendCommand(human_string, ser) # Send command read (human_string) to arduino
+            if testingWithArduino:
+                if score > 0.5:
+                    commandToArduino.sendCommand(human_string, ser) # Send command read (human_string) to arduino
             break
 
 
 def main(args):
     bufferInclude = collections.deque(maxlen=lookBackBufferLength)
-    takingData = False
+    takingDataCountdown = audioCutSplitChunks
     while 1:
         data = stream.read(CHUNK)
         bufferInclude.append(data)
         # print(data)
-        if np_audioop_rms(data, CHUNK) < RMSthreshold and takingData:
-            takingData = False
-        if np_audioop_rms(data, CHUNK) > RMSthreshold and not takingData:
-            takingData = True
+        if np_audioop_rms(data, CHUNK) < RMSthreshold and takingDataCountdown > 0:
+            takingDataCountdown -= audioCutSplitChunks
+        if np_audioop_rms(data, CHUNK) > RMSthreshold and takingDataCountdown == 0:
+            takingDataCountdown = audioCutSplitChunks
             thread = threading.Thread(target=threadFunction, args=([bufferInclude]))
             thread.start()
 
-
-port = get_serial_port()
-ser = serial.Serial(port, baudRate)
+if testingWithArduino:
+    port = get_serial_port()
+    ser = serial.Serial(port, baudRate)
 tf.app.run(main=main)
 
 
