@@ -42,6 +42,7 @@ RMSthreshold = 2000
 voiceExtractTimeSeconds = 1
 lookBackBufferLength = 10 #43 is a second of length
 audioCutSplitChunks = 4
+scoreThreshold = 0.5
 
 info = p.get_host_api_info_by_index(0)
 numdevices = info.get('deviceCount')
@@ -215,7 +216,7 @@ def run_graph(wav_data, labels):
             score = predictions[node_id]
             print('%s (score = %.5f)' % (human_string, score))
             if testingWithArduino:
-                if score > 0.5:
+                if score > scoreThreshold:
                     commandToArduino.sendCommand(human_string, ser) # Send command read (human_string) to arduino
             break
 
