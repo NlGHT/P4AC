@@ -14,13 +14,13 @@ import threading
 import collections
 import commandToArduino
 
-baudRate = 2000000
+baudRate = 9600
 
 labels = "speech_commands_train/conv_labels.txt"
 graph = "speech_commands_train/my_frozen_graph.pb"
 wav = "samples/leftTest.wav"
 
-testingWithArduino = False
+testingWithArduino = True
 
 
 #####################################################
@@ -42,7 +42,7 @@ RMSthreshold = 2000
 voiceExtractTimeSeconds = 1
 lookBackBufferLength = 10 #43 is a second of length
 audioCutSplitChunks = 4
-scoreThreshold = 0.5
+scoreThreshold = 0.3
 
 info = p.get_host_api_info_by_index(0)
 numdevices = info.get('deviceCount')
@@ -236,8 +236,8 @@ def main(args):
             thread.start()
 
 if testingWithArduino:
-    port = get_serial_port()
-    ser = serial.Serial(port, baudRate)
+    #port = get_serial_port()
+    ser = serial.Serial('COM4', baudRate)
 tf.app.run(main=main)
 
 
