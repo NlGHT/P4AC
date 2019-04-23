@@ -39,9 +39,9 @@ p = pyaudio.PyAudio()
 # You can specify which microphone input device you want to use
 micDeviceIndex: int = -1
 RMSthreshold: int = 2000
-voiceExtractTimeSeconds: int = 1
+voiceExtractTimeSeconds: float = 1
 lookBackBufferLength: int = 10 #43 is a second of length
-audioCutSplitChunks: int = 4
+audioCutSplitChunks: int = 20
 scoreThreshold: float = 0.5
 
 info = p.get_host_api_info_by_index(0)
@@ -138,7 +138,7 @@ def get_serial_port():
         arduino_ports = [
             p.device
             for p in serial.tools.list_ports.comports()
-            if 'Arduino' in p.description or 'Serial' in p.description
+            if 'Arduino' in p.description or 'CH340' in p.description
         ]
         if not arduino_ports:
             raise IOError("No Arduino found")
@@ -236,8 +236,8 @@ def main(args):
             thread.start()
 
 if testingWithArduino:
-    #port = get_serial_port()
-    ser = serial.Serial('COM4', baudRate)
+    port = get_serial_port()
+    ser = serial.Serial(port, baudRate)
 tf.app.run(main=main)
 
 
