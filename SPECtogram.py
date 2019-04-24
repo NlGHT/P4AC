@@ -38,7 +38,7 @@ def gimmeDaSPECtogram(input, window_size_ms=30.0, stride_ms=10.0, pre_emphasis=0
 
     indices = numpy.tile(numpy.arange(0, window_size_ms), (num_frames, 1)) + numpy.tile(
         numpy.arange(0, num_frames * stride_ms, stride_ms), (window_size_ms, 1)).T
-    frames = pad_signal[indices.astype(numpy.int32, copy=False)]
+    frames = pad_signal[indices.astype(numpy.int32, copy=False)] #cast the array to be of type int32.
 
     frames *= numpy.hamming(window_size_ms)
     # frames *= 0.54 - 0.46 * numpy.cos((2 * numpy.pi * n) / (frame_length - 1))  # Explicit Implementation **
@@ -49,7 +49,7 @@ def gimmeDaSPECtogram(input, window_size_ms=30.0, stride_ms=10.0, pre_emphasis=0
     #plt.plot(pow_frames)
 
     low_freq_mel = 0
-    high_freq_mel = (2595 * numpy.log10(1 + (sample_rate / 2) / 700))  #Why is this shit divided by 2? huh? # Convert Hz to Mel
+    high_freq_mel = (2595 * numpy.log10(1 + (sample_rate / 4) / 700))  #Ask liming shi #Why is this shit divided by 2? huh? is it because it's half of 8k that they are using? do we need to divide it by 4 then? # Convert Hz to Mel
     mel_points = numpy.linspace(low_freq_mel, high_freq_mel, triangular_filters + 2)  # Equally spaced in Mel scale
     hz_points = (700 * (10 ** (mel_points / 2595) - 1))  # Convert Mel to Hz
     bin = numpy.floor((NFFT + 1) * hz_points / sample_rate)
