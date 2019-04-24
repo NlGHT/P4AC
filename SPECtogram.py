@@ -12,12 +12,12 @@ def gimmeDaSPECtogram(input, window_size_ms=30.0, stride_ms=10.0, pre_emphasis=0
 
 
     emphasized_signal = numpy.append(signal[0], signal[1:] - pre_emphasis * signal[:-1])
-    frame_length, frame_step = window_size_ms * sample_rate, stride_ms * sample_rate  # Convert from seconds to samples
+    window_size_ms, stride_ms = window_size_ms * sample_rate, stride_ms * sample_rate  # Convert from seconds to samples
     signal_length = len(emphasized_signal)
-    frame_length = int(round(frame_length))
-    frame_step = int(round(frame_step))
+    window_size_ms = int(round(window_size_ms))
+    stride_ms = int(round(stride_ms))
     num_frames = int(numpy.ceil(
-        float(numpy.abs(signal_length - frame_length)) / frame_step))  # Make sure that we have at least 1 frame
+        float(numpy.abs(signal_length - window_size_ms)) / stride_ms))  # Make sure that we have at least 1 frame
 
     print(sample_rate)
     """ FIXED
@@ -31,16 +31,16 @@ def gimmeDaSPECtogram(input, window_size_ms=30.0, stride_ms=10.0, pre_emphasis=0
     """
 
 
-    pad_signal_length = num_frames * frame_step + frame_length
+    pad_signal_length = num_frames * stride_ms + window_size_ms
     z = numpy.zeros((pad_signal_length - signal_length))
     pad_signal = numpy.append(emphasized_signal,
                               z)  # Pad Signal to make sure that all frames have equal number of samples without truncating any samples from the original signal
 
-    indices = numpy.tile(numpy.arange(0, frame_length), (num_frames, 1)) + numpy.tile(
-        numpy.arange(0, num_frames * frame_step, frame_step), (frame_length, 1)).T
+    indices = numpy.tile(numpy.arange(0, window_size_ms), (num_frames, 1)) + numpy.tile(
+        numpy.arange(0, num_frames * stride_ms, stride_ms), (window_size_ms, 1)).T
     frames = pad_signal[indices.astype(numpy.int32, copy=False)]
 
-    frames *= numpy.hamming(frame_length)
+    frames *= numpy.hamming(window_size_ms)
     # frames *= 0.54 - 0.46 * numpy.cos((2 * numpy.pi * n) / (frame_length - 1))  # Explicit Implementation **
 
     mag_frames = numpy.absolute(numpy.fft.rfft(frames, NFFT))  # Magnitude of the FFT
@@ -129,4 +129,4 @@ def gimmeDaSPECtogram(input, window_size_ms=30.0, stride_ms=10.0, pre_emphasis=0
 
 
 
-gimmeDaSPECtogram("samples/leftTest.wav", window_size_ms=30.0, stride_ms=10.0, pre_emphasis=0.97)
+gimmeDaSPECtogram("samples/left.wav", window_size_ms=30.0, stride_ms=10.0, pre_emphasis=0.97)
