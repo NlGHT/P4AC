@@ -81,10 +81,11 @@ def gimmeDaSPECtogram(input, window_size_ms=30.0, stride_ms=10.0, pre_emphasis=0
                ['0', '3', '6', '9', '12'])
     ax = plt.gca()
     ax.invert_yaxis()
-    # ax.set_ylim(bottom=0)
     plt.show()
 
-    return do_mfcc(filter_banks, upper_frequency_limit=4000, lower_frequency_limit=0, dct_coefficient_count=12)
+    mfccs_graph = filter_banks
+
+    return mfccs_graph
 
     #plt.imshow(filter_banks)
 
