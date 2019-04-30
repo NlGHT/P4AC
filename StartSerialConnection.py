@@ -17,10 +17,10 @@ import commandToArduino
 baudRate = 9600
 
 labels = "speech_commands_train/conv_labels.txt"
-graph = "speech_commands_train/my_frozen_graph.pb"
+graph = "speech_commands_train/frozen_graph_extra_numbers.pb"
 wav = "samples/leftTest.wav"
 
-testingWithArduino = True
+testingWithArduino = False
 
 
 #####################################################
