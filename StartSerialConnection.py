@@ -20,7 +20,7 @@ labels = "speech_commands_train/conv_labels.txt"
 graph = "speech_commands_train/frozen_graph_extra_numbers.pb"
 wav = "samples/leftTest.wav"
 
-testingWithArduino = False
+testingWithArduino = True
 
 
 #####################################################
@@ -42,7 +42,7 @@ RMSthreshold: int = 2000
 voiceExtractTimeSeconds: float = 1
 lookBackBufferLength: int = 10 #43 is a second of length
 audioCutSplitChunks: int = 20
-scoreThreshold: float = 0.5
+scoreThreshold: float = 0.3
 
 info = p.get_host_api_info_by_index(0)
 numdevices = info.get('deviceCount')
