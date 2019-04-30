@@ -32,10 +32,10 @@ def sendCommand(command, serialPort):
             serialPort.write(b'7')
             print("Sent '7' to Arduino (cross / one)")
         elif(command == "stop"):
-            serialPort.write(b'8')
+            serialPort.write(b'9')
             print("Sent '8' to Arduino (stop)")
         elif(command == "go"):
-            serialPort.write(b'9')
+            serialPort.write(b'8')
             print("Sent '9' to Arduino (go)")
         else:
             serialPort.write(b'99')
