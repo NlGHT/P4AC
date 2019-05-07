@@ -21,10 +21,10 @@ def sendCommand(command, serialPort):
             print("Sent '3' to Arduino (down)")
         elif (command == "two"):
             serialPort.write(b'4')
-            print("Sent '4' to Arduino (tri / two)")
+            print("Sent '4' to Arduino (square / two)")
         elif (command == "three"):
             serialPort.write(b'5')
-            print("Sent '5' to Arduino (square / three)")
+            print("Sent '5' to Arduino (tri / three)")
         elif (command == "four"):
             serialPort.write(b'6')
             print("Sent '6' to Arduino (round / four)")
